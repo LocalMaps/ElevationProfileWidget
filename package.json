@@ -1,0 +1,24 @@
+{
+  "name": "elevation-profile",
+  "version": "1.2.0",
+  "description": "This is the widget that will chart elevation profiles for the lines that the user draws.",
+  "files": [ "src/widgets" ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LocalMaps/ElevationWidget.git"
+  },
+  "keywords": [
+    "LocalMaps",
+    "Widget",
+    "ElevationProfile"
+  ],
+  "author": "Esri & Robert Scheitlin & LocalMaps",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "bugs": {
+    "url": "https://github.com/LocalMaps/ElevationWidget/issues"
+  },
+  "homepage": "https://github.com/LocalMaps/ElevationWidget#readme"
+}

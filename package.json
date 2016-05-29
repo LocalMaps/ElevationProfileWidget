@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LocalMaps/ElevationWidget.git"
+    "url": "git+https://github.com/LocalMaps/ElevationProfileWidget.git"
   },
   "keywords": [
     "LocalMaps",
@@ -18,7 +18,7 @@
   "author": "Esri & Robert Scheitlin & LocalMaps",
   "license": "http://www.apache.org/licenses/LICENSE-2.0",
   "bugs": {
-    "url": "https://github.com/LocalMaps/ElevationWidget/issues"
+    "url": "https://github.com/LocalMaps/ElevationProfileWidget/issues"
   },
-  "homepage": "https://github.com/LocalMaps/ElevationWidget#readme"
+  "homepage": "https://github.com/LocalMaps/ElevationProfileWidget#readme"
 }

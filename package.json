@@ -1,5 +1,5 @@
 {
-  "name": "elevation-profile",
+  "name": "elevation-profile-widget",
   "version": "1.2.0",
   "description": "This is the widget that will chart elevation profiles for the lines that the user draws.",
   "files": [ "src/widgets" ],

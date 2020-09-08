@@ -673,6 +673,16 @@ define([
         html.setStyle(this.divOptions, 'display', 'none');
         html.setStyle(this.btnDownload, 'display', 'none');
         html.setStyle(this.progressBar.domNode, 'display', 'block');
+        // clear/disable interactions while getting new profile geometry
+        if (this.elevationIndicator) {
+          this.elevationIndicator.destroy();
+          this.elevationIndicator = null;
+        }
+        if (this.elevationIndicator2) {
+          this.elevationIndicator2.destroy();
+          this.elevationIndicator2 = null;
+        }
+        this._displayChartLocation(-1);
         this._getProfile(geometry).then(lang.hitch(this, function (elevationInfo) {
           this.elevationInfo = elevationInfo;
           this._updateProfileChart();
@@ -871,11 +881,11 @@ define([
             this.elevationIndicator2 = new MouseIndicator(this.profileChart, 'default', indicatorProperties2);
             this.elevationIndicator = new MouseIndicator(this.profileChart, 'default', indicatorProperties);
           }
-          // CLEAR RED MARKER CROSS ON CHART MOUSE LEAVE //
+          // CLEAR RED X ON CHART MOUSE LEAVE //
           on(this._chartNode, 'mouseleave', lang.hitch(this, function(){
             this._displayChartLocation(-1);
           }));
-          // CLEAR RED MARKER CROSS ON CLICK OUTSIDE CHART //
+          // CLEAR RED X ON CLICK OUTSIDE CHART //
           on(document, 'click', lang.hitch(this, function(evt) {
             if (!this._chartNode.contains(evt.target)) {
               this._displayChartLocation(-1);

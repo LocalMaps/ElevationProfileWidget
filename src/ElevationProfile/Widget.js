@@ -170,20 +170,26 @@ define([
         this._initMeasureTool();
       },
 
+      _selectLineListener: undefined,
+
       _drawLine: function () {
         domStyle.set(this.lblDrawLine, "display", "inline");
         domStyle.set(this.lblSelectLine, "display", "none");
+        if (this._selectLineListener) {
+          this._selectLineListener.remove();
+          this._selectLineListener = undefined;
+        }
         this.measureTool.setTool("distance", true);
       },
 
-        _selectLine: function () {
-            this.map.setInfoWindowOnClick(false);
-            topic.publish('lm-disable-popup');
+      _selectLine: function () {
+        this.map.setInfoWindowOnClick(false);
+        topic.publish('lm-disable-popup');
         this.measureTool.setTool("distance", false);
         domStyle.set(this.lblDrawLine, "display", "none");
         domStyle.set(this.lblSelectLine, "display", "inline");
-          
-        this.own(on(this.map.infoWindow, 'set-features', lang.hitch(this, function (evt) {
+        
+        this.own(this._selectLineListener = on(this.map.infoWindow, 'set-features', lang.hitch(this, function (evt) {
           //evt.stopPropagation();
           var selectedFeature = evt.target.getSelectedFeature();
           if (selectedFeature.geometry.type === 'polyline') {
@@ -683,6 +689,14 @@ define([
           this.elevationIndicator2 = null;
         }
         this._displayChartLocation(-1);
+        domStyle.set(this.lblSelectLine, "display", "none");
+        domStyle.set(this.lblSelectLine, "display", "none");
+        this.measureTool.setTool("distance", false);
+        if (this._selectLineListener) {
+          this._selectLineListener.remove();
+          this._selectLineListener = undefined;
+        }
+
         this._getProfile(geometry).then(lang.hitch(this, function (elevationInfo) {
           this.elevationInfo = elevationInfo;
           this._updateProfileChart();

@@ -538,7 +538,6 @@ define([
             },
             callbackParamName: 'callback'
           }).then(lang.hitch(this, function (taskInfo) {
-            //console.log('GP Service Details: ', taskInfo);
 
             // TASK DETAILS //
             this.taskInfo = taskInfo;
@@ -872,6 +871,16 @@ define([
             this.elevationIndicator2 = new MouseIndicator(this.profileChart, 'default', indicatorProperties2);
             this.elevationIndicator = new MouseIndicator(this.profileChart, 'default', indicatorProperties);
           }
+          // CLEAR RED MARKER CROSS ON CHART MOUSE LEAVE //
+          on(this._chartNode, 'mouseleave', lang.hitch(this, function(){
+            this._displayChartLocation(-1);
+          }));
+          // CLEAR RED MARKER CROSS ON CLICK OUTSIDE CHART //
+          on(document, 'click', lang.hitch(this, function(evt) {
+            if (!this._chartNode.contains(evt.target)) {
+              this._displayChartLocation(-1);
+            }
+          }));
           this.profileChart.fullRender();
         }
 

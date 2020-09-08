@@ -188,6 +188,7 @@ define([
         this.measureTool.setTool("distance", false);
         domStyle.set(this.lblDrawLine, "display", "none");
         domStyle.set(this.lblSelectLine, "display", "inline");
+        this.measureTool.clearResult();
         
         this.own(this._selectLineListener = on(this.map.infoWindow, 'set-features', lang.hitch(this, function (evt) {
           //evt.stopPropagation();

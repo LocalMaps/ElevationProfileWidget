@@ -59,14 +59,13 @@ define([
         this.setConfig(this.config);
         this._initMeasureTool();
         this._bindEvents();
-       
       },
 
       setConfig: function (config) {
         //hack the 'Learn more about this widget link'
         setTimeout(function () {
           var helpLink = query('.help-link');
-          helpLink[0].href = 'http://gis.calhouncounty.org/WAB/V1.2/widgets/ElevationProfile/help/elevationprofile_Help.htm';
+          helpLink[0].href = 'http://gis.calhouncounty.org/WAB/V2.4/widgets/ElevationProfile/help/elevationprofile_Help.htm';
           html.setStyle(helpLink[0], 'display', 'block');
         }, 600);
         if (config.profileTaskUrl) {

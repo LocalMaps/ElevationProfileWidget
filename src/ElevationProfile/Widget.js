@@ -104,7 +104,7 @@ define([
         var panel = dom.byId('widgets_ElevationProfile_Widget_38_panel');
         domClass.add(panel, 'jimu-widget-panel-elevation');
 
-        if (has('ipad') || has('iphone') || has('android')) {
+        if (has('touch')) {
           domStyle.set(this.btnFinish, 'display', 'inline-block');
         }
 

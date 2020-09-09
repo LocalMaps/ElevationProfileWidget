@@ -104,7 +104,7 @@ define([
         var panel = dom.byId('widgets_ElevationProfile_Widget_38_panel');
         domClass.add(panel, 'jimu-widget-panel-elevation');
 
-        if (has('ipad') || has('iphone') || has('android')) {
+        if (has('touch')) {
           domStyle.set(this.btnFinish, 'display', 'inline-block');
         }
 
@@ -170,20 +170,27 @@ define([
         this._initMeasureTool();
       },
 
+      _selectLineListener: undefined,
+
       _drawLine: function () {
         domStyle.set(this.lblDrawLine, "display", "inline");
         domStyle.set(this.lblSelectLine, "display", "none");
+        if (this._selectLineListener) {
+          this._selectLineListener.remove();
+          this._selectLineListener = undefined;
+        }
         this.measureTool.setTool("distance", true);
       },
 
-        _selectLine: function () {
-            this.map.setInfoWindowOnClick(false);
-            topic.publish('lm-disable-popup');
+      _selectLine: function () {
+        this.map.setInfoWindowOnClick(false);
+        topic.publish('lm-disable-popup');
         this.measureTool.setTool("distance", false);
         domStyle.set(this.lblDrawLine, "display", "none");
         domStyle.set(this.lblSelectLine, "display", "inline");
-          
-        this.own(on(this.map.infoWindow, 'set-features', lang.hitch(this, function (evt) {
+        this.measureTool.clearResult();
+        
+        this.own(this._selectLineListener = on(this.map.infoWindow, 'set-features', lang.hitch(this, function (evt) {
           //evt.stopPropagation();
           var selectedFeature = evt.target.getSelectedFeature();
           if (selectedFeature.geometry.type === 'polyline') {
@@ -538,7 +545,6 @@ define([
             },
             callbackParamName: 'callback'
           }).then(lang.hitch(this, function (taskInfo) {
-            //console.log('GP Service Details: ', taskInfo);
 
             // TASK DETAILS //
             this.taskInfo = taskInfo;
@@ -674,6 +680,24 @@ define([
         html.setStyle(this.divOptions, 'display', 'none');
         html.setStyle(this.btnDownload, 'display', 'none');
         html.setStyle(this.progressBar.domNode, 'display', 'block');
+        // clear/disable interactions while getting new profile geometry
+        if (this.elevationIndicator) {
+          this.elevationIndicator.destroy();
+          this.elevationIndicator = null;
+        }
+        if (this.elevationIndicator2) {
+          this.elevationIndicator2.destroy();
+          this.elevationIndicator2 = null;
+        }
+        this._displayChartLocation(-1);
+        domStyle.set(this.lblSelectLine, "display", "none");
+        domStyle.set(this.lblSelectLine, "display", "none");
+        this.measureTool.setTool("distance", false);
+        if (this._selectLineListener) {
+          this._selectLineListener.remove();
+          this._selectLineListener = undefined;
+        }
+
         this._getProfile(geometry).then(lang.hitch(this, function (elevationInfo) {
           this.elevationInfo = elevationInfo;
           this._updateProfileChart();
@@ -872,6 +896,16 @@ define([
             this.elevationIndicator2 = new MouseIndicator(this.profileChart, 'default', indicatorProperties2);
             this.elevationIndicator = new MouseIndicator(this.profileChart, 'default', indicatorProperties);
           }
+          // CLEAR RED X ON CHART MOUSE LEAVE //
+          on(this._chartNode, 'mouseleave', lang.hitch(this, function(){
+            this._displayChartLocation(-1);
+          }));
+          // CLEAR RED X ON CLICK OUTSIDE CHART //
+          on(document, 'click', lang.hitch(this, function(evt) {
+            if (!this._chartNode.contains(evt.target)) {
+              this._displayChartLocation(-1);
+            }
+          }));
           this.profileChart.fullRender();
         }
 

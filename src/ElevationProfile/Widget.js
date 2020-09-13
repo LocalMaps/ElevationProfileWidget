@@ -352,16 +352,19 @@ define([
         if (this.measureTool) {
           this.measureTool.setTool("distance", false);
           this.measureTool.clearResult();
-          this._displayChartLocation(-1);
         }
+        this._displayChartLocation(-1);
+        // reset profile chart 
+        this._clear();
       },
 
-      onOpen: function () {
-        if (this.lastMeasure && this.measureTool) {
-          this.measureTool.measure(this.lastMeasure);
-          }
-          
-      },
+      // unsure why this was included - results in refetching exsting profile data 
+      // (updated widget to clear this when removed this)
+      // onOpen: function () {
+      //   if (this.lastMeasure && this.measureTool) {
+      //     this.measureTool.measure(this.lastMeasure);
+      //   } 
+      // },
 
       /**
        * INITIALIZE ESRI MEASUREMENT DIJIT

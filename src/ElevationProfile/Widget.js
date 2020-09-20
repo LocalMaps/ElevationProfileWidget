@@ -35,12 +35,13 @@ define([
   'esri/tasks/Geoprocessor',
   'esri/geometry/Polyline',
   'esri/symbols/SimpleLineSymbol',
+  'esri/symbols/CartographicLineSymbol',
   'esri/symbols/SimpleMarkerSymbol',
   'esri/graphic',
   'esri/tasks/FeatureSet',
   'esri/tasks/LinearUnit',
   'esri/geometry/geodesicUtils',
-    'esri/geometry/webMercatorUtils',
+  'esri/geometry/webMercatorUtils',
   'esri/tasks/GeometryService',
   'esri/units',
   'jimu/utils',
@@ -67,8 +68,8 @@ define([
     on, has, topic, aspect, lang, Deferred, array, number, registry,
     put, domClass, domStyle, dom, Color, colors,
     Chart, Default, Grid, Areas, MouseIndicator, TouchIndicator, ThreeD, esriSniff,
-    esriRequest, Geoprocessor, Polyline, SimpleLineSymbol, SimpleMarkerSymbol,
-    Graphic, FeatureSet, LinearUnit, geodesicUtils, webMercatorUtils,GeometryService, Units, jimuUtils,
+    esriRequest, Geoprocessor, Polyline, SimpleLineSymbol, CartographicLineSymbol, SimpleMarkerSymbol,
+    Graphic, FeatureSet, LinearUnit, geodesicUtils, webMercatorUtils, GeometryService, Units, jimuUtils,
     Measurement, html, ProgressBar, TabContainer, Message, domConstruct,
     gfxUtils, esriConfig, ProjectParameters, SpatialReference, BaseFeatureAction,
     PopupMenu, CSVUtils, esriBundle, Message) {
@@ -189,21 +190,23 @@ define([
         domStyle.set(this.lblDrawLine, "display", "none");
         domStyle.set(this.lblSelectLine, "display", "inline");
         this.measureTool.clearResult();
-        
+        // set-features appears to be trigged before selection-change event listened to by popup 
+        // when click near but not on line however selection-change is not triggered on click on 
+        // line
         this.own(this._selectLineListener = on(this.map.infoWindow, 'set-features', lang.hitch(this, function (evt) {
-          //evt.stopPropagation();
           var selectedFeature = evt.target.getSelectedFeature();
           if (selectedFeature.geometry.type === 'polyline') {
             this._onMeasureEnd({
               toolName: "distance",
               geometry: selectedFeature.geometry
             });
-              this.map.setInfoWindowOnClick(true);
-              topic.publish('lm-enable-popup');
+            this.map.infoWindow.clearFeatures();
+            this.map.setInfoWindowOnClick(true);
+            topic.publish('lm-enable-popup');
           }
         })));
       },
-      
+
 
       foldChanged: function (folded) {
         if (folded == true) {
@@ -354,6 +357,7 @@ define([
           this.measureTool.clearResult();
         }
         this._displayChartLocation(-1);
+        this._displayChartLine(false);
         // reset profile chart 
         this._clear();
       },
@@ -450,7 +454,9 @@ define([
       },
 
       _onMeasureEnd: function (evt) {
+        this._displayChartLine(evt.geometry);
         if (evt.toolName === "distance") {
+          this.measureTool.clearResult();
           this.tabContainer.selectTab(this.nls.resultslabel);
           if (!this.map.spatialReference.isWebMercator()) {
             var params = new ProjectParameters();
@@ -700,9 +706,9 @@ define([
           this._selectLineListener.remove();
           this._selectLineListener = undefined;
         }
-
         this._getProfile(geometry).then(lang.hitch(this, function (elevationInfo) {
           this.elevationInfo = elevationInfo;
+          this._displayChartLine(elevationInfo.geometry);
           this._updateProfileChart();
           this.emit('display-profile', elevationInfo);
           html.setStyle(this.divOptions, 'display', 'block');
@@ -781,6 +787,7 @@ define([
         if (!elevationInfo) {
           // CLEAR GRAPHIC FROM MAP //
           this._displayChartLocation(-1);
+          this._displayChartLine(false);
 
           // SAMPLING DISTANCE //
           this.samplingDistance.distance = (this.map.extent.getWidth() / this.samplingPointCount);
@@ -900,11 +907,11 @@ define([
             this.elevationIndicator = new MouseIndicator(this.profileChart, 'default', indicatorProperties);
           }
           // CLEAR RED X ON CHART MOUSE LEAVE //
-          on(this._chartNode, 'mouseleave', lang.hitch(this, function(){
+          on(this._chartNode, 'mouseleave', lang.hitch(this, function () {
             this._displayChartLocation(-1);
           }));
           // CLEAR RED X ON CLICK OUTSIDE CHART //
-          on(document, 'click', lang.hitch(this, function(evt) {
+          on(document, 'click', lang.hitch(this, function (evt) {
             if (!this._chartNode.contains(evt.target)) {
               this._displayChartLocation(-1);
             }
@@ -1120,15 +1127,15 @@ define([
        * @private
        */
       _resizeChart: function () {
-          if (this.profileChart) {
-              this.profileChart.resize();
-              if (this._chartNode.childNodes.length === 3) { 
-                  var svg = this._chartNode.childNodes[2];
-                  var h = svg.height.animVal.value;
-                  var w = svg.width.animVal.value;
-                  domStyle.set(svg, 'width', w +"px");
-                  domStyle.set(svg, 'height', h +'px');
-              }
+        if (this.profileChart) {
+          this.profileChart.resize();
+          if (this._chartNode.childNodes.length === 3) {
+            var svg = this._chartNode.childNodes[2];
+            var h = svg.height.animVal.value;
+            var w = svg.width.animVal.value;
+            domStyle.set(svg, 'width', w + "px");
+            domStyle.set(svg, 'height', h + 'px');
+          }
         }
       },
 
@@ -1157,6 +1164,20 @@ define([
           } else {
             this.chartLocationGraphic.setGeometry(null);
           }
+        }
+      },
+
+      _displayChartLine: function (geometry) {
+        if (this.map && geometry) {
+          if (!this.chartLineGraphic) {
+            var blue = Color.fromRgb("rgba(0, 243, 255, 0.8)");
+            var chartLineSymbol = new CartographicLineSymbol(CartographicLineSymbol.STYLE_SOLID, blue, 3, CartographicLineSymbol.CAP_ROUND, CartographicLineSymbol.JOIN_BEVEL);
+            this.chartLineGraphic = new Graphic(geometry, chartLineSymbol);
+            this.map.graphics.add(this.chartLineGraphic);
+          }
+          this.chartLineGraphic.setGeometry(geometry);
+        } else if (!geometry && this.chartLineGraphic) {
+          this.chartLineGraphic.setGeometry(null);
         }
       },
 
